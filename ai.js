@@ -42,6 +42,18 @@ function loop () {
       if (0 === grid[0] || 0 === grid[1] || 0 === grid[2] || 0 === grid[3])
         return false;
 
+    let avaliables = grid.map((v, k) => v === 0 && k).filter(v => v);
+
+    if (avaliables.length === 1) {
+      grid[avaliables[0]] = this.food;
+    }
+
+    if (!canMove.call(this, grid, directions.get(buttons.left))
+     && !canMove.call(this, grid, directions.get(buttons.up))
+     && !canMove.call(this, grid, directions.get(buttons.right))) {
+      return false;
+    }
+
     if (differenceScore > bestScore) {
       bestScore = differenceScore;
       bestKey = key;
@@ -52,15 +64,30 @@ function loop () {
      */
     directions.forEach((direction2, key2) => {
       let grid2 = grid.slice();
+      let avaliables = grid2.map((v, k) => v === 0 && k).filter(v => v);;
 
       if (canMove.call(this, grid2, direction2)) {
         let differenceScore2 = score.call(this, direction2, grid2) - this.score;
 
         if (isRight) {
+          // if (avaliables.length >= 8)
+          //   return false;
           if (key2 !== buttons.up)
             return false;
           if (0 === grid2[0] || 0 === grid2[1] || 0 === grid2[2] || 0 === grid2[3])
             return false;
+        }
+
+        avaliables = grid2.map((v, k) => v === 0 && k).filter(v => v);
+
+        if (avaliables.length === 1) {
+          grid2[avaliables[0]] = (1 == this.food ? 2 : 1);
+        }
+
+        if (!canMove.call(this, grid2, directions.get(buttons.left))
+         && !canMove.call(this, grid2, directions.get(buttons.up))
+         && !canMove.call(this, grid2, directions.get(buttons.right))) {
+          return false;
         }
 
         if (differenceScore2 > bestScore) {
@@ -76,6 +103,8 @@ function loop () {
    */
   if (!bestKey)
     directions.forEach((direction, key) => {
+      let grid = this.grid.slice();
+
       if (key === buttons.right)
         return false;
 
@@ -85,8 +114,74 @@ function loop () {
       if (!canMove.call(this, this.grid, direction))
         return false;
 
+      score.call(this, direction, grid);
+
+      let avaliables = grid.map((v, k) => v === 0 && k).filter(v => v);
+
+      if (avaliables.length === 1) {
+        grid[avaliables[0]] = this.food;
+      }
+
+      if (!canMove.call(this, grid, directions.get(buttons.left))
+       && !canMove.call(this, grid, directions.get(buttons.up))
+       && !canMove.call(this, grid, directions.get(buttons.right))) {
+        return false;
+      }
+
       bestKey = key;
     }, this);
+
+
+  // if (!bestKey)
+  //   directions.forEach((direction, key) => {
+  //     let grid = this.grid.slice();
+
+  //     if (key === buttons.up)
+  //       return false;
+
+  //     if (key === buttons.left)
+  //       return false;
+
+  //     if (!canMove.call(this, this.grid, direction))
+  //       return false;
+
+  //     score.call(this, direction, grid);
+
+  //     let avaliables = grid.map((v, k) => v === 0 && k).filter(v => v);
+
+  //     if (avaliables.length === 1) {
+  //       grid[avaliables[0]] = this.food;
+  //     }
+
+  //     if (!canMove.call(this, grid, directions.get(buttons.left))
+  //      && !canMove.call(this, grid, directions.get(buttons.up))
+  //      && !canMove.call(this, grid, directions.get(buttons.right))) {
+  //       return false;
+  //     }
+
+  //     bestKey = key;
+  //   }, this);
+  // if (!bestKey) {
+  //   let grid = this.grid.slice();
+  //   let direction = directions.get(buttons.right);
+
+  //   if (!canMove.call(this, this.grid, direction))
+  //     return false;
+
+  //   score.call(this, direction, grid);
+
+  //   let avaliables = grid.map((v, k) => v === 0 && k).filter(v => v);
+
+  //   if (avaliables.length !== 1)
+  //     return false;
+
+  //   grid[avaliables[0]] = this.food;
+
+  //   if (canMove.call(this, this.grid, directions.get(buttons.left)))
+  //     bestKey = buttons.left;
+  //   else if (canMove.call(this, this.grid, directions.get(buttons.down)))
+  //     bestKey = buttons.down;
+  // }
 
   /**
    * Если ход не выбран, то выбрать ход вправо.
@@ -94,6 +189,13 @@ function loop () {
   if (!bestKey)
     if (canMove.call(this, this.grid, directions.get(buttons.right)))
       bestKey = buttons.right;
+
+  /**
+   * Если ход не выбран, то выбрать ход вниз.
+   */
+  if (!bestKey)
+    if (canMove.call(this, this.grid, directions.get(buttons.down)))
+      bestKey = buttons.down;
 
   this.keyPressed = bestKey;
 };
@@ -189,4 +291,4 @@ function score (t, grid, e) {
   return e ? u === 1 : score;
 };
 
-var interval = setInterval(loop.bind(game), 100);
+var interval = setInterval(loop.bind(game), 50);
